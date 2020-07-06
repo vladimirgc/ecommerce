@@ -1,6 +1,7 @@
 <?php 
 session_start();
 require_once("vendor/autoload.php");
+require_once("vendor/functions.php");
 
 use \Hcode\Page;
 use \Hcode\PageAdmin;
@@ -63,6 +64,88 @@ $app->get('/admin/logout', function(){
 	exit;
 
 });
+
+$app->get('/admin/users', function(){
+	User::verifyLogin(); //chama método estático da classe User
+	$users = User::listAll();
+	$page = new PageAdmin();
+	$page->setTpl("users", array(
+		"users" => $users
+	));
+
+});
+
+$app->get('/admin/users/create', function(){
+	User::verifyLogin(); //chama método estático da classe User
+	$page = new PageAdmin();
+	$page->setTpl("users-create");
+
+});
+
+$app->get('/admin/users/:iduser/delete', function($iduser){//deletar usuario
+	User::verifyLogin(); //chama método estático da classe User. Como tem o delete este dever vir acima e evitar que o Slim nao execute.
+
+	$user = new User();
+
+	$user->get((int)$iduser);
+
+	$user->delete();
+
+	header("Location: /admin/users");
+    exit; 
+
+});
+
+
+$app->get('/admin/users/:iduser', function($iduser){//passado iduser na rota
+	User::verifyLogin();
+ 
+   $user = new User();
+ 
+   $user->get((int)$iduser);
+ 
+   $page = new PageAdmin();
+ 
+   $page ->setTpl("users-update", array(
+        "user"=>$user->getValues()
+    ));
+
+});
+
+$app->post("/admin/users/create", function () {
+
+ 	User::verifyLogin();
+ 
+    $user = new User();
+    $_POST["inadmin"] = (isset($_POST["inadmin"]))?1:0;
+    $user->setData($_POST);
+    $user->save(); 
+ 
+    header("Location: /admin/users");
+    exit; 
+
+});
+
+
+$app->post('/admin/users/:iduser', function($iduser){//atualizar usuario via post
+	User::verifyLogin(); //chama método estático da classe User
+
+	$user = new User();
+
+	$_POST["inadmin"] = (isset($_POST["inadmin"]))?1:0;
+
+	$user->get((int)$iduser);
+
+	$user->setData($_POST);
+
+	$user->update();
+
+	header("Location: /admin/users");
+    exit; 
+
+});
+
+
 
 $app->run();
 

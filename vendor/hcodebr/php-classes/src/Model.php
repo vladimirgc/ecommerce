@@ -4,15 +4,15 @@ namespace Hcode;
 
 class Model {// Classe para otimizar get e set
 
-	private $values = []; //todos dados 
+	private $values = [];
 
-	public function setData($data)
+	public function setData($data=array())
 	{
 
 		foreach ($data as $key => $value)
 		{
 
-			$this->{"set".$key}($value);//criar algo dinamico precisa vir entre chaves
+			$this->{"set".$key}($value);
 
 		}
 
@@ -21,8 +21,8 @@ class Model {// Classe para otimizar get e set
 	public function __call($name, $args)
 	{
 
-		$method = substr($name, 0, 3); // set ou get - 3 primeiros digitos do metodo
-		$fieldName = substr($name, 3, strlen($name)); // a partir da 3 posicao do nome do metodo
+		$method = substr($name, 0, 3);
+		$fieldName = substr($name, 3, strlen($name));
 
 		if (in_array($fieldName, $this->fields))
 		{
