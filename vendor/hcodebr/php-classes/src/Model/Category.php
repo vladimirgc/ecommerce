@@ -60,17 +60,17 @@ class Category extends Model {
 	}
 
 	public static function updateFile()
-	{
+	{//para atualizar dinamicamente categorias na página html
 
 		$categories = Category::listAll();
 
 		$html = [];
 
-		foreach ($categories as $row) {
+		foreach ($categories as $row) {//criar 
 			array_push($html, '<li><a href="/categories/'.$row['idcategory'].'">'.$row['descategory'].'</a></li>');
 		}
 
-		file_put_contents($_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "categories-menu.html", implode('', $html));
+		file_put_contents($_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "categories-menu.html", implode('', $html)); //pega caminho fisico para salvar
 
 	}
 

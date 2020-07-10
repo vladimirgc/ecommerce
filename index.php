@@ -291,6 +291,16 @@ $app->post("/admin/categories/:idcategory", function($idcategory){
 
 });
 
+$app->get("/categories/:idcategory", function($idcategory){
+	$category = new Category();
+	$category->get((int)$idcategory); //necessario converte para inteiro por tudo que vem pela URL é texto
+	$page = new Page();
+	$page->setTpl("category", [
+		"category"=>$category->getValues(),
+		"produts"=>[]
+	]);
+});
+
 $app->run();
 
  ?>
