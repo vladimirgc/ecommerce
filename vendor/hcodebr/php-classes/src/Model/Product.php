@@ -20,7 +20,7 @@ class Product extends Model {
 	public static function checkList($list)
 	{
 
-		foreach ($list as &$row) {
+		foreach ($list as &$row) { //manipular mesma variavel na memoria &
 			
 			$p = new Product();
 			$p->setData($row);
