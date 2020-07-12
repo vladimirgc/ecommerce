@@ -7,6 +7,7 @@ use \Hcode\Page;
 use \Hcode\PageAdmin;
 use \Hcode\Model\User;
 use \Hcode\Model\Category;
+use \Hcode\Model\Product;
 
 $app = new \Slim\Slim();
 
@@ -296,11 +297,71 @@ $app->get("/categories/:idcategory", function($idcategory){
 	$category->get((int)$idcategory); //necessario converte para inteiro por tudo que vem pela URL é texto
 	$page = new Page();
 	$page->setTpl("category", [
-		"category"=>$category->getValues(),
-		"produts"=>[]
+		"category"=>$category->getValues()
 	]);
+});
+
+$app->get("/admin/products", function(){
+	User::verifyLogin(); //chama método estático da classe User
+	$products = Product::listAll();
+	$page = new PageAdmin();
+	$page->setTpl("products", [
+		"products"=>$products
+	]);	
+
+});
+
+$app->get("/admin/products/create", function(){
+	User::verifyLogin(); //chama método estático da classe User
+	$page = new PageAdmin();
+	$page->setTpl("products-create");
+
+});
+
+$app->post("/admin/products/create", function(){
+	User::verifyLogin(); //chama método estático da classe User
+	$product = new Product();
+	$product->setData($_POST);
+	$product->save();
+	header("Location: /admin/products");
+	exit;
+});
+
+
+$app->get("/admin/products/:idproduct", function($idproduct){
+	User::verifyLogin(); //chama método estático da classe User
+	$product = new Product();
+	$product->get((int)$idproduct);
+	$page = new PageAdmin();
+	$page->setTpl("products-update", [
+		"product"=>$product->getValues()
+
+	]);
+
+});
+
+$app->post("/admin/products/:idproduct", function($idproduct){
+	User::verifyLogin(); //chama método estático da classe User
+	$product = new Product();
+	$product->get((int)$idproduct);
+	$product->setData($_POST);
+	$product->save();
+	if ($_FILES["file"]["name"] != "")
+		$product->setPhoto($_FILES["file"]);
+	header("Location: /admin/products");
+	exit;
+
+});
+
+$app->get("/admin/products/:idproduct/delete", function($idproduct){
+	User::verifyLogin(); //chama método estático da classe User
+	$product = new Product();
+	$product->get((int)$idproduct);
+	$product->delete();
+	header("Location: /admin/products");
+	exit;
 });
 
 $app->run();
 
- ?>
+?>
