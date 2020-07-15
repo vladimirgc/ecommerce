@@ -289,13 +289,23 @@ $app->post("/admin/categories/:idcategory", function($idcategory){
 });
 
 $app->get("/categories/:idcategory", function($idcategory){
-	//User::verifyLogin(); //chama método estático da classe User
+	$page = (isset($_GET["page"])) ? (int)$_GET["page"] : 1;
 	$category = new Category();
 	$category->get((int)$idcategory); //necessario converte para inteiro por tudo que vem pela URL é texto
+	
+	$pagination = $category->getProductsPage($page);
+	$pages = [];
+	for ($i=1; $i <=$pagination["pages"] ; $i++) { 
+		array_push($pages, [
+			"link"=>"/categories/".$category->getidcategory()."?page=".$i,
+			"page"=>$i
+		]);
+	}
 	$page = new Page();
 	$page->setTpl("category", [
 		"category"=>$category->getValues(),
-		"products"=>Product::checkList($category->getProducts())
+		"products"=>$pagination["data"],
+		"pages"=>$pages
 	]);
 });
 

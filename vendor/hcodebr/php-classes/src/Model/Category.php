@@ -109,10 +109,10 @@ class Category extends Model {
 
 	}
 
-	public function getProductsPage($page = 1, $itemsPerPage = 8)
+	public function getProductsPage($page = 1, $itemsPerPage = 8)//itens por página
 	{
 
-		$start = ($page - 1) * $itemsPerPage;
+		$start = ($page - 1) * $itemsPerPage; //1-1*3 = 0 | 2 -1 *3 = 3
 
 		$sql = new Sql();
 
@@ -132,7 +132,7 @@ class Category extends Model {
 		return [
 			'data'=>Product::checkList($results),
 			'total'=>(int)$resultTotal[0]["nrtotal"],
-			'pages'=>ceil($resultTotal[0]["nrtotal"] / $itemsPerPage)
+			'pages'=>ceil($resultTotal[0]["nrtotal"] / $itemsPerPage) //ceil converte arredondando para cima
 		];
 
 	}
