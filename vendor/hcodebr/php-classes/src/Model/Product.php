@@ -158,7 +158,7 @@ class Product extends Model {
 			':desurl'=>$desurl
 		]);
 
-		$this->setData($rows[0]);
+		$this->setData($rows[0]);//coloca dados dentro do objeto
 
 	}
 
