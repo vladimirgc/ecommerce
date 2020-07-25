@@ -16,6 +16,50 @@ class User extends Model {
 		"iduser", "idperson", "desperson", "deslogin", "desemail", "nrphone", "despassword", "inadmin", "dtergister"
 	]; //todos os CAMPOS usados no salvar e atualizar
 
+	public static function getFromSession()	
+	{
+			$user = new User();
+
+			if (isset($_SESSION[User::SESSION]) && (int)$_SESSION[User::SESSION]["iduser"] > 0){
+				
+				$user->setData($_SESSION[User::SESSION]);
+			}
+
+			return $user;
+	}
+
+	public static function checkLogin($inadmin = true)
+	{
+
+		if (
+			!isset($_SESSION[User::SESSION]) //sessao nao definida
+			||
+			!$_SESSION[User::SESSION] //definida mas vazia
+			||
+			!(int)$_SESSION[User::SESSION]["iduser"] > 0
+		) {
+			//Não está logado
+			return false;
+
+		} else {
+
+			if ($inadmin === true && (bool)$_SESSION[User::SESSION]['inadmin'] === true) {//rota da adm com usuario adm
+
+				return true;
+
+			} else if ($inadmin === false) {
+
+				return true;
+
+			} else {
+
+				return false;
+
+			}
+
+		}
+
+	}
 
 
 	public static function login($login, $password)
@@ -58,7 +102,7 @@ class User extends Model {
 	}
 
 	public static function verifyLogin($inadmin = true)
-	{
+	{/*
 
 		if (
 			!isset($_SESSION[User::SESSION]) //nao foi definida a Session
@@ -73,7 +117,19 @@ class User extends Model {
 			header("Location: /admin/login");// redireciona para login
 			exit;
 
+		}*/
+
+		if (!User::checkLogin($inadmin)) {
+
+			if ($inadmin) {
+				header("Location: /admin/login");
+			} else {
+				header("Location: /login");
+			}
+			exit;
+
 		}
+
 
 	}
 
