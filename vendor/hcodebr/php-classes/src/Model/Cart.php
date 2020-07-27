@@ -127,7 +127,7 @@ class Cart extends Model {
 
 	}
 
-	public function removeProduct(Product $product, $all = false)
+	public function removeProduct(Product $product, $all = false)//removendo toda quantidade do mesmo produto
 	{
 
 		$sql = new Sql();
@@ -140,7 +140,7 @@ class Cart extends Model {
 			]);
 
 		} else {
-
+			//remove apenas 1 quantidade 
 			$sql->query("UPDATE tb_cartsproducts SET dtremoved = NOW() WHERE idcart = :idcart AND idproduct = :idproduct AND dtremoved IS NULL LIMIT 1", [
 				':idcart'=>$this->getidcart(),
 				':idproduct'=>$product->getidproduct()
