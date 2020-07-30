@@ -39,6 +39,7 @@ class Cart extends Model {
 
 				}
 
+
 				$cart->setData($data);
 
 				$cart->save();
@@ -109,6 +110,8 @@ class Cart extends Model {
 			':nrdays'=>$this->getnrdays()
 		]);
 
+		
+
 		$this->setData($results[0]);
 
 	}
@@ -118,7 +121,7 @@ class Cart extends Model {
 
 		$sql = new Sql();
 
-		$sql->query("INSERT INTO tb_cartsproducts (idcart, idproduct) VALUES(:idcart, :idproduct)", [
+		$sql->query("INSERT INTO tb_cartsproducts(idcart, idproduct) VALUES(:idcart, :idproduct)", [
 			':idcart'=>$this->getidcart(),
 			':idproduct'=>$product->getidproduct()
 		]);
@@ -173,7 +176,7 @@ class Cart extends Model {
 	}
 
 	public function getProductsTotals()
-	{
+	{//calcular totais a serem usados no frete
 
 		$sql = new Sql();
 
@@ -189,7 +192,7 @@ class Cart extends Model {
 		if (count($results) > 0) {
 			return $results[0];
 		} else {
-			return [];
+			return [];//retorna array vazio
 		}
 
 	}
@@ -197,15 +200,17 @@ class Cart extends Model {
 	public function setFreight($nrzipcode)
 	{
 
-		$nrzipcode = str_replace('-', '', $nrzipcode);
+		$nrzipcode = str_replace('-', '', $nrzipcode);//remover qualquer espaco ou hifen
 
 		$totals = $this->getProductsTotals();
-
+		//tem alguem produto no carrinho
 		if ($totals['nrqtd'] > 0) {
 
-			if ($totals['vlheight'] < 2) $totals['vlheight'] = 2;
-			if ($totals['vllength'] < 16) $totals['vllength'] = 16;
+			if ($totals['vlheight'] < 2) $totals['vlheight'] = 2;//minimo permitido 2
+			if ($totals['vllength'] < 16) $totals['vllength'] = 16;//minimo permitido 16 
 
+
+			//todos os dados para passar por parametro 
 			$qs = http_build_query([
 				'nCdEmpresa'=>'',
 				'sDsSenha'=>'',
@@ -213,7 +218,7 @@ class Cart extends Model {
 				'sCepOrigem'=>'09853120',
 				'sCepDestino'=>$nrzipcode,
 				'nVlPeso'=>$totals['vlweight'],
-				'nCdFormato'=>'1',
+				'nCdFormato'=>'1',//caixa ou pacote segundo doc dos Correios
 				'nVlComprimento'=>$totals['vllength'],
 				'nVlAltura'=>$totals['vlheight'],
 				'nVlLargura'=>$totals['vlwidth'],
@@ -222,14 +227,14 @@ class Cart extends Model {
 				'nVlValorDeclarado'=>$totals['vlprice'],
 				'sCdAvisoRecebimento'=>'S'
 			]);
-
+			//funcao do PHP que le xml: simplexml_load_file 
 			$xml = simplexml_load_file("http://ws.correios.com.br/calculador/CalcPrecoPrazo.asmx/CalcPrecoPrazo?".$qs);
 
-			$result = $xml->Servicos->cServico;
+			$result = $xml->Servicos->cServico; //de acordo com aplicacao dos Correios
 
 			if ($result->MsgErro != '') {
 
-				Cart::setMsgError($result->MsgErro);
+				Cart::setMsgError((string)$result->MsgErro);
 
 			} else {
 
@@ -254,7 +259,7 @@ class Cart extends Model {
 	}
 
 	public static function formatValueToDecimal($value):float
-	{
+	{// tirar ponto e colocar virgula para inserir no banco de dados
 
 		$value = str_replace('.', '', $value);
 		return str_replace(',', '.', $value);
@@ -262,14 +267,14 @@ class Cart extends Model {
 	}
 
 	public static function setMsgError($msg)
-	{
+	{//sessao de erro
 
 		$_SESSION[Cart::SESSION_ERROR] = $msg;
 
 	}
 
 	public static function getMsgError()
-	{
+	{//retornar sessao de erro
 
 		$msg = (isset($_SESSION[Cart::SESSION_ERROR])) ? $_SESSION[Cart::SESSION_ERROR] : "";
 
@@ -280,7 +285,7 @@ class Cart extends Model {
 	}
 
 	public static function clearMsgError()
-	{
+	{//limpar sessao de erro
 
 		$_SESSION[Cart::SESSION_ERROR] = NULL;
 
@@ -311,7 +316,7 @@ class Cart extends Model {
 
 		$this->updateFreight();
 
-		$totals = $this->getProductsTotals();
+		$totals = $this->getProductsTotals();//traz valores totais do carrinho
 
 		$this->setvlsubtotal($totals['vlprice']);
 		$this->setvltotal($totals['vlprice'] + (float)$this->getvlfreight());

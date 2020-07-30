@@ -12,7 +12,8 @@ class Model {// Classe para otimizar get e set
 		foreach ($data as $key => $value)
 		{
 
-			$this->{"set".$key}(utf8_encode($value));
+			//$this->{"set".$key}(utf8_encode($value));
+			$this->{"set".$key}($value);
 
 		}
 
