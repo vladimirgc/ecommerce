@@ -11,6 +11,9 @@ class User extends Model {
 	const SESSION = "User";
 	const SECRET = "HcodePhp7_Secret"; //mudar quando hospedar. Mesmo quantidade de caracteres
 	const SECRET_IV = "HcodePhp7_Secret_IV";
+	const ERROR = "UserError";
+	const ERROR_REGISTER = "UserErrorRegister";
+	const SUCCESS = "UserSucesss";
 
 	protected $fields = [
 		"iduser", "idperson", "desperson", "deslogin", "desemail", "nrphone", "despassword", "inadmin", "dtergister"
@@ -36,7 +39,7 @@ class User extends Model {
 			||
 			!$_SESSION[User::SESSION] //definida mas vazia
 			||
-			!(int)$_SESSION[User::SESSION]["iduser"] > 0
+			!(int)$_SESSION[User::SESSION]["iduser"] > 0 
 		) {
 			//Não está logado
 			return false;
@@ -65,31 +68,34 @@ class User extends Model {
 	public static function login($login, $password)
 	{
 
-		$db = new Sql();
+		$sql = new Sql();
 
-		$results = $db->select("SELECT * FROM tb_users WHERE deslogin = :LOGIN", array(
+		$results = $sql->select("SELECT * FROM tb_users a INNER JOIN tb_persons b ON a.idperson = b.idperson WHERE a.deslogin = :LOGIN", array(
 			":LOGIN"=>$login
-		));
+		)); 
 
-		if (count($results) === 0) {
-			throw new \Exception("Não foi possível fazer login.");
+		if (count($results) === 0)
+		{
+			throw new \Exception("Usuário inexistente ou senha inválida.");
 		}
 
 		$data = $results[0];
 
-		if (password_verify($password, $data["despassword"])) {
+		if (password_verify($password, $data["despassword"]) === true)
+		{
 
 			$user = new User();
+
+			$data['desperson'] = utf8_encode($data['desperson']);
+
 			$user->setData($data);
 
-			$_SESSION[User::SESSION] = $user->getValues(); //colocando na sessao dados do objeto User como array
+			$_SESSION[User::SESSION] = $user->getValues(); //coloca dados do Usuario na sessao
 
 			return $user;
 
 		} else {
-
-			throw new \Exception("Não foi possível fazer login."); //Classe Exception é do nivel abaixo
-
+			throw new \Exception("Usuário inexistente ou senha inválida."); //Classe nivel abaixo
 		}
 
 	}
@@ -148,7 +154,7 @@ class User extends Model {
 		$results = $sql->select("CALL sp_users_save(:desperson, :deslogin, :despassword, :desemail, :nrphone, :inadmin)", array(
 			":desperson"=>utf8_decode($this->getdesperson()),
 			":deslogin"=>$this->getdeslogin(),
-			":despassword"=>$this->getdespassword(),
+			":despassword"=>User::getPasswordHash($this->getdespassword()), //criptografar antes de jogar no banco
 			":desemail"=>$this->getdesemail(),
 			":nrphone"=>$this->getnrphone(),
 			":inadmin"=>$this->getinadmin()
@@ -186,7 +192,7 @@ class User extends Model {
 			":iduser"=>$this->getiduser(),
 			":desperson"=>utf8_decode($this->getdesperson()),
 			":deslogin"=>$this->getdeslogin(),
-			":despassword"=>User::getPasswordHash($this->getdespassword()),
+			":despassword"=>User::getPasswordHash($this->getdespassword()), //criptografar antes de jogar no banco
 			":desemail"=>$this->getdesemail(),
 			":nrphone"=>$this->getnrphone(),
 			":inadmin"=>$this->getinadmin()
@@ -334,6 +340,103 @@ public static function validForgotDecrypt($code)
 			":password"=>$password,
 			":iduser"=>$this->getiduser()
 		));
+
+	}
+
+	public static function setError($msg)
+	{
+
+		$_SESSION[User::ERROR] = $msg;
+
+	}
+
+	public static function getError()
+	{
+
+		$msg = (isset($_SESSION[User::ERROR]) && $_SESSION[User::ERROR]) ? $_SESSION[User::ERROR] : '';
+
+		User::clearError();
+
+		return $msg;
+
+	}
+
+	public static function clearError()
+	{
+
+		$_SESSION[User::ERROR] = NULL;
+
+	}
+
+	public static function setSuccess($msg)
+	{
+
+		$_SESSION[User::SUCCESS] = $msg;
+
+	}
+
+	public static function getSuccess()
+	{
+
+		$msg = (isset($_SESSION[User::SUCCESS]) && $_SESSION[User::SUCCESS]) ? $_SESSION[User::SUCCESS] : '';
+
+		User::clearSuccess();
+
+		return $msg;
+
+	}
+
+	public static function clearSuccess()
+	{
+
+		$_SESSION[User::SUCCESS] = NULL;
+
+	}
+
+	public static function setErrorRegister($msg)
+	{
+
+		$_SESSION[User::ERROR_REGISTER] = $msg;
+
+	}
+
+	public static function getErrorRegister()
+	{
+
+		$msg = (isset($_SESSION[User::ERROR_REGISTER]) && $_SESSION[User::ERROR_REGISTER]) ? $_SESSION[User::ERROR_REGISTER] : '';
+
+		User::clearErrorRegister();
+
+		return $msg;
+
+	}
+
+	public static function clearErrorRegister()
+	{
+
+		$_SESSION[User::ERROR_REGISTER] = NULL;
+
+	}
+
+	public static function checkLoginExist($login)
+	{
+
+		$sql = new Sql();
+
+		$results = $sql->select("SELECT * FROM tb_users WHERE deslogin = :deslogin", [
+			':deslogin'=>$login
+		]);
+
+		return (count($results) > 0);
+
+	}
+
+	public static function getPasswordHash($password)
+	{
+
+		return password_hash($password, PASSWORD_DEFAULT, [
+			'cost'=>12
+		]);
 
 	}
 
