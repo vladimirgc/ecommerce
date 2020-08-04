@@ -427,7 +427,7 @@ public static function validForgotDecrypt($code)
 			':deslogin'=>$login
 		]);
 
-		return (count($results) > 0);
+		return (count($results) > 0); // retornar se tiver resultado verdadeiro
 
 	}
 
