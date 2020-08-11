@@ -12,18 +12,18 @@ class Address extends Model {
 	public static function getCEP($nrcep)
 	{
 
-		$nrcep = str_replace("-", "", $nrcep);
+		$nrcep = str_replace("-", "", $nrcep);//deixa cep somente com numeros
 
-		$ch = curl_init();
+		$ch = curl_init(); //rastrear url
 
-		curl_setopt($ch, CURLOPT_URL, "http://viacep.com.br/ws/$nrcep/json/");
+		curl_setopt($ch, CURLOPT_URL, "http://viacep.com.br/ws/$nrcep/json/"); 
 
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); //esperando que retorne
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // nao exigir ssl
 
-		$data = json_decode(curl_exec($ch), true);
+		$data = json_decode(curl_exec($ch), true); // true retorna como array
 
-		curl_close($ch);
+		curl_close($ch); //fechar para nao abrir novo espaço na memória
 
 		return $data;
 
@@ -53,11 +53,11 @@ class Address extends Model {
 
 		$sql = new Sql();
 
-		$results = $sql->select("CALL sp_addresses_save(:idaddress, :idperson, :desaddress, :desnumber, :descomplement, :descity, :desstate, :descountry, :deszipcode, :desdistrict)", [
+		$results = $sql->select("CALL sp_addresses_save(:idaddress, :idperson, :desaddress, :descomplement, :descity, :desstate, :descountry, :deszipcode, :desdistrict)", [
 			':idaddress'=>$this->getidaddress(),
 			':idperson'=>$this->getidperson(),
 			':desaddress'=>utf8_decode($this->getdesaddress()),
-			':desnumber'=>$this->getdesnumber(),
+			//':desnumber'=>$this->getdesnumber(),
 			':descomplement'=>utf8_decode($this->getdescomplement()),
 			':descity'=>utf8_decode($this->getdescity()),
 			':desstate'=>utf8_decode($this->getdesstate()),
