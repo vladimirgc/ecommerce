@@ -797,7 +797,7 @@ $app->get("/order/:idorder", function($idorder){
 
 $app->get("/boleto/:idorder", function($idorder){
 
-User::verifyLogin(false);
+	User::verifyLogin(false);
 
 	$order = new Order();
 
@@ -865,6 +865,32 @@ User::verifyLogin(false);
 
 	require_once($path . "funcoes_itau.php");
 	require_once($path . "layout_itau.php");
+
+});
+
+$app->get("/profile/orders", function(){
+	User::verifyLogin(false); //false porque nao é usuário administrador
+	$user = User::getFromSession();
+	$page = new Page();
+	$page->setTpl("profile-orders", [
+		"orders"=>$user->getOrders()
+	]);
+
+});
+
+$app->get("/profile/orders/:idorder", function($idorder){
+	User::verifyLogin(false); //false porque nao é usuário administrador
+	$order = new Order();
+	$order->get((int)$idorder);
+	$cart = new Cart();
+	$cart->get((int)$order->getidcart());
+	$cart->getCalculateTotal();
+	$page = new Page();
+	$page->setTpl("profile-orders-detail", [
+		"order"=>$order->getValues(),
+		"cart"=>$cart->getValues(),
+		"products"=>$cart->getProducts()
+	]);
 
 });
 
