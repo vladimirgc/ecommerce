@@ -198,7 +198,8 @@ class User extends Model {
 			":inadmin"=>$this->getinadmin()
 		));
 
-		$this->setData($results[0]);		
+		$this->setData($results[0]);
+		$_SESSION[User::SESSION] = $this->getValues();		
 
 	}
 
