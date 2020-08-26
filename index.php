@@ -282,7 +282,7 @@ $app->get("/admin/categories", function(){
 
 	}
 
-	$categories = Category::listAll();
+	//$categories = Category::listAll();
 
 	$page = new PageAdmin();
 	$page->setTpl("categories", [
@@ -401,7 +401,7 @@ $app->get("/admin/products", function(){
 
 	}
 
-	$products = Product::listAll();
+	//$products = Product::listAll();
 	$page = new PageAdmin();
 	$page->setTpl("products", [
 		"products" => $pagination['data'],
@@ -1111,9 +1111,39 @@ $app->get("/admin/orders/:idorder", function($idorder){
 
 $app->get("/admin/orders", function(){
 	User::verifyLogin(false); //false porque nao é usuário administrador
+
+	$search = (isset($_GET['search'])) ? $_GET['search'] : "";
+	$page = (isset($_GET['page'])) ? (int)$_GET['page'] : 1;
+	if ($search != '') {
+
+		$pagination = Order::getPageSearch($search, $page);
+
+	} else {
+
+		$pagination = Order::getPage($page);
+
+	}
+
+	$pages = [];
+
+	for ($x = 0; $x < $pagination['pages']; $x++)
+	{
+
+		array_push($pages, [
+			'href'=>'/admin/orders?'.http_build_query([
+				'page'=>$x+1,
+				'search'=>$search
+			]),
+			'text'=>$x+1
+		]);
+
+	}
+
 	$page = new PageAdmin();
 	$page->setTpl("orders", [
-		"orders"=>Order::listAll()
+		"orders" => $pagination['data'],
+		"search"=>$search,
+		"pages"=>$pages
 	]);
 
 });
