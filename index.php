@@ -68,6 +68,63 @@ $app->get('/admin/logout', function(){
 
 });
 
+$app->get('/admin/users/:iduser/password', function($iduser){//deletar usuario
+	User::verifyLogin(); //chama método estático da classe User. Como tem o delete este dever vir acima e evitar que o Slim nao execute.
+
+	$user = new User();
+
+	$user->get((int)$iduser);
+
+	$page = new PageAdmin();
+	$page->setTpl("users-password", array(
+		"user" => $user->getValues(),
+		"msgError"=>User::getError(),
+		"msgSuccess"=>User::getSuccess()
+	));
+
+});
+
+$app->post("/admin/users/:iduser/password", function($iduser){
+
+	User::verifyLogin();
+
+	if (!isset($_POST['despassword']) || $_POST['despassword']==='') {
+
+		User::setError("Preencha a nova senha.");
+		header("Location: /admin/users/$iduser/password");
+		exit;
+
+	}
+
+	if (!isset($_POST['despassword-confirm']) || $_POST['despassword-confirm']==='') {
+
+		User::setError("Preencha a confirmação da nova senha.");
+		header("Location: /admin/users/$iduser/password");
+		exit;
+
+	}
+
+	if ($_POST['despassword'] !== $_POST['despassword-confirm']) {
+
+		User::setError("Confirme corretamente as senhas.");
+		header("Location: /admin/users/$iduser/password");
+		exit;
+
+	}
+
+	$user = new User();
+
+	$user->get((int)$iduser);
+
+	$user->setPassword(User::getPasswordHash($_POST['despassword']));
+
+	//User::setSuccess("Senha alterada com sucesso.")
+
+	header("Location: /admin/users");
+	exit;
+
+});
+
 $app->get('/admin/users', function(){
 	User::verifyLogin(); //chama método estático da classe User
 	$search = (isset($_GET['search'])) ? $_GET['search'] : "";
